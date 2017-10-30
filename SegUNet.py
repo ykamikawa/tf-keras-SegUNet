@@ -267,6 +267,10 @@ if __name__ == "__main__":
                 validation_steps=args.val_steps,
                 callbacks=[cp_cb, es_cb, tb_cb])
 
+        # save weights
+        segunet.save_weights("../LIP/pretrained/LIP_SegUNetstoped.hdf5")
+
+    # save model
     with open("../LIP/pretrained/LIP_SegUNet.json", "w") as json_file:
         json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
     print("save json model done...")
