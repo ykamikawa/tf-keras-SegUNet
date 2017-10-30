@@ -95,11 +95,11 @@ def CreateSegUNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode
     conv_17 = BatchNormalization()(conv_17)
     conv_17 = Activation("relu")(conv_17)
     conv_18 = Convolution2D(512, (kernel, kernel), padding="same")(conv_17)
-    conv_18 = BatchNormalization()(conv_17)
-    conv_18 = Activation("relu")(conv_17)
+    conv_18 = BatchNormalization()(conv_18)
+    conv_18 = Activation("relu")(conv_18)
     conv_19 = Convolution2D(512, (kernel, kernel), padding="same")(conv_18)
-    conv_19 = BatchNormalization()(conv_18)
-    conv_19 = Activation("relu")(conv_18)
+    conv_19 = BatchNormalization()(conv_19)
+    conv_19 = Activation("relu")(conv_19)
 
     unpool_2 = MaxUnpooling2D(pool_size)([conv_19, mask_4])
     concat_2 = Concatenate()([unpool_2, conv_10])
@@ -233,15 +233,15 @@ if __name__ == "__main__":
     train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
     val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
 
-    segnet = CreateSegNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
-    print(segnet.summary())
+    segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+    print(segunet.summary())
 
-    segnet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
-    segnet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
+    segunet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
+    segunet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
 
-    segnet.save_weights("../dataset/LIP/pretrained/LIP_SegUNet"+args.n_epochs+".hdf5")
+    segunet.save_weights("../dataset/LIP/pretrained/LIP_SegUNet"+args.n_epochs+".hdf5")
     print("sava weight done..")
 
     with open("LIP_SegUNet"+args.n_epochs+".json", "w") as json_file:
-        json_file.write(json.dumps(json.loads(segnet.to_json()), indent=2))
+        json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
     print("save json model done...")
