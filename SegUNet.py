@@ -253,7 +253,7 @@ if __name__ == "__main__":
         fpath = '../LIP/pretrained/LIP_SegUNet{epoch:02d}.hdf5'
         cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=10)
         es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="../LIP/pretrained")
+        tb_cb = TensorBoard(log_dir="../LIP/pretrained", write_images=True)
 
         # compile model
         segunet.compile(loss=args.loss,
