@@ -6,6 +6,9 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.merge import Multiply, Concatenate
 from keras.utils import np_utils
+import keras.backend.tensorflow_backend as KTF
+import tensorflow as tf
+from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
 from Mylayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 from generator import binarylab, gray2rgb, data_gen_small
@@ -181,11 +184,11 @@ if __name__ == "__main__":
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
-            default=10,
+            default=50,
             type=int,
             help="number of epoch")
     parser.add_argument("--epoch_steps",
-            default=100,
+            default= 300,
             type=int,
             help="number of epoch step")
     parser.add_argument("--val_steps",
@@ -230,18 +233,40 @@ if __name__ == "__main__":
     valimg_dir = args.valimg_dir
     valmsk_dir = args.valmsk_dir
 
-    train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
-    val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
+    # get old session
+    old_session = KTF.get_session()
 
-    segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
-    print(segunet.summary())
+    with tf.Graph().as_default():
+        session = tf.Session('')
+        KTF.set_session(session)
+        KTF.set_learning_phase(1)
 
-    segunet.compile(loss=args.loss, optimizer=args.optimizer, metrics=["accuracy"])
-    segunet.fit_generator(train_gen, steps_per_epoch=args.epoch_steps, epochs=args.n_epochs, validation_data=val_gen, validation_steps=args.val_steps)
+        # set generater
+        train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
+        val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
 
-    segunet.save_weights("../dataset/LIP/pretrained/LIP_SegUNet"+args.n_epochs+".hdf5")
-    print("sava weight done..")
+        # set model
+        segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+        print(segunet.summary())
 
-    with open("LIP_SegUNet"+args.n_epochs+".json", "w") as json_file:
+        # set callbacks
+        fpath = '../LIP/pretrained/LIP_SegUNet{epoch:02d}.hdf5'
+        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto')
+        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+        tb_cb = TensorBoard(log_dir="../LIP/pretrained")
+
+        # compile model
+        segunet.compile(loss=args.loss,
+                optimizer=args.optimizer,
+                metrics=["accuracy"])
+        # fit with genarater
+        segunet.fit_generator(generator=train_gen,
+                steps_per_epoch=args.epoch_steps,
+                epochs=args.n_epochs,
+                validation_data=val_gen,
+                validation_steps=args.val_steps,
+                callbacks=[cp_cb, es_cb, tb_cb])
+
+    with open("../LIP/pretrained/LIP_SegUNet.json", "w") as json_file:
         json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
     print("save json model done...")
