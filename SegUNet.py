@@ -242,8 +242,18 @@ if __name__ == "__main__":
         KTF.set_learning_phase(1)
 
         # set generater
-        train_gen = data_gen_small(trainimg_dir, trainmsk_dir, train_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
-        val_gen = data_gen_small(valimg_dir, valmsk_dir, val_list, args.batch_size, [args.input_shape[0], args.input_shape[1]], args.n_labels)
+        train_gen = data_gen_small(trainimg_dir,
+                trainmsk_dir,
+                train_list,
+                args.batch_size,
+                [args.input_shape[0], args.input_shape[1]],
+                args.n_labels)
+        val_gen = data_gen_small(valimg_dir,
+                valmsk_dir,
+                val_list,
+                args.batch_size,
+                [args.input_shape[0], args.input_shape[1]],
+                args.n_labels)
 
         # set model
         segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
