@@ -123,10 +123,10 @@ if __name__ == "__main__":
         print(segunet.summary())
 
         # set callbacks
-        fpath = '../LIP/pretrained/LIP_SegUNet{epoch:02d}.hdf5'
+        fpath = './pretrained/LIP_SegUNet{epoch:02d}.hdf5'
         cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=5)
         es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="../LIP/pretrained", write_images=True)
+        tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
 
         # compile model
         segunet.compile(loss=args.loss,
@@ -141,6 +141,6 @@ if __name__ == "__main__":
                 callbacks=[cp_cb, es_cb, tb_cb])
 
     # save model
-    with open("../LIP/pretrained/LIP_SegUNet.json", "w") as json_file:
+    with open("./pretrained/LIP_SegUNet.json", "w") as json_file:
         json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
     print("save json model done...")
