@@ -1,5 +1,5 @@
 __pycache__/
 .ipynb_checkpoints
-pretrained/*.hdf5
+pretrained
 *.ipynb
 *.hdf5
