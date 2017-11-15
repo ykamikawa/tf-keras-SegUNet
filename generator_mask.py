@@ -5,15 +5,6 @@ from keras.preprocessing.image import array_to_img, img_to_array, load_img, Imag
 from scipy.misc import imresize
 
 
-# utility function to convert greyscale images to rgb
-def gray2rgb(img):
-    new_img = []
-    for i in range(img.shape[0]):
-        for j in range(img.shape[1]):
-            new_img.append(list(img[i][j])*3)
-    new_img = np.array(new_img).reshape(img.shape[0], img.shape[1], 3)
-    return new_img
-
 def msklab(labels,dims,target_num):
     x = np.zeros([dims[0],dims[1],1])
     for i in range(dims[0]):

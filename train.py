@@ -1,25 +1,18 @@
 # -*- coding: utf-8 -*-
-from keras.models import Model
-from keras.layers import Input
-from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Permute
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D, ZeroPadding2D
-from keras.layers.normalization import BatchNormalization
-from keras.layers.merge import Multiply, Concatenate
-from keras.utils import np_utils
 import keras.backend.tensorflow_backend as KTF
 import tensorflow as tf
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint
 
-from generator import binarylab, gray2rgb, data_gen_small
-from SegUNet import CreateSegUNet
-
+from generator import data_gen_small
 
 import os
 import numpy as np
 import argparse
 import json
 import pandas as pd
-from PIL import Image
+
+from SegUNet import CreateSegUNet
+
 
 if __name__ == "__main__":
     # command line argments
@@ -84,7 +77,13 @@ if __name__ == "__main__":
             default="adadelta",
             type=str,
             help="oprimizer")
+    parser.add_argument("--gpu_num",
+            default="0",
+            type=str,
+            help="num of gpu")
     args = parser.parse_args()
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
 
     # set the necessary list
     train_list = pd.read_csv(args.train_list,header=None)
@@ -104,6 +103,12 @@ if __name__ == "__main__":
         KTF.set_session(session)
         KTF.set_learning_phase(1)
 
+        # set callbacks
+        fpath = './pretrained/LIP_SegUNet{epoch:02d}.hdf5'
+        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=5)
+        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+        tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
+
         # set generater
         train_gen = data_gen_small(trainimg_dir,
                 trainmsk_dir,
@@ -122,16 +127,11 @@ if __name__ == "__main__":
         segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
         print(segunet.summary())
 
-        # set callbacks
-        fpath = './pretrained/LIP_SegUNet{epoch:02d}.hdf5'
-        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=5)
-        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
-
         # compile model
         segunet.compile(loss=args.loss,
                 optimizer=args.optimizer,
                 metrics=["accuracy"])
+
         # fit with genarater
         segunet.fit_generator(generator=train_gen,
                 steps_per_epoch=args.epoch_steps,
