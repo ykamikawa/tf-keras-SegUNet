@@ -57,7 +57,7 @@ if __name__ == "__main__":
             type=int,
             help="Number of label")
     parser.add_argument("--input_shape",
-            default=(512, 512, 3),
+            default=(256, 256, 3),
             help="Input images shape")
     parser.add_argument("--kernel",
             default=3,
