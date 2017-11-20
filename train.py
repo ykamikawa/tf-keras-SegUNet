@@ -13,6 +13,7 @@ import pandas as pd
 
 from SegUNet import CreateSegUNet
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 if __name__ == "__main__":
     # command line argments
