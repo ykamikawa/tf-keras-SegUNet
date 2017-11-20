@@ -36,15 +36,15 @@ if __name__ == "__main__":
             default="../LIP/TrainVal_parsing_annotations/TrainVal_parsing_annotations/val_segmentations/",
             help="val mask dir path")
     parser.add_argument("--batch_size",
-            default=15,
+            default=10,
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
-            default=50,
+            default=30,
             type=int,
             help="number of epoch")
     parser.add_argument("--epoch_steps",
-            default=2000,
+            default=3000,
             type=int,
             help="number of epoch step")
     parser.add_argument("--val_steps",
@@ -56,7 +56,7 @@ if __name__ == "__main__":
             type=int,
             help="Number of label")
     parser.add_argument("--input_shape",
-            default=(256, 256, 3),
+            default=(512, 512, 3),
             help="Input images shape")
     parser.add_argument("--kernel",
             default=3,

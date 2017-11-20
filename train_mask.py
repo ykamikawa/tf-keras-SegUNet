@@ -105,10 +105,10 @@ if __name__ == "__main__":
         KTF.set_learning_phase(1)
 
         # set callbacks
-        fpath = './pretrained/LIP_SegUNet_mask{epoch:02d}.hdf5'
+        fpath = './pretrained_mask/LIP_SegUNet_mask{epoch:02d}.hdf5'
         cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=5)
         es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
+        tb_cb = TensorBoard(log_dir="./pretrained_mask", write_images=True)
 
         # set generater
         train_gen = data_gen_small(trainimg_dir,
@@ -146,6 +146,6 @@ if __name__ == "__main__":
                 callbacks=[cp_cb, es_cb, tb_cb])
 
     # save model
-    with open("./pretrained/LIP_SegUNet_mask.json", "w") as json_file:
+    with open("./pretrained_mask/LIP_SegUNet_mask.json", "w") as json_file:
         json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
     print("save json model done...")
