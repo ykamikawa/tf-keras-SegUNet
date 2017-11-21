@@ -13,7 +13,6 @@ import pandas as pd
 
 from SegUNet import CreateSegUNet
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 if __name__ == "__main__":
     # command line argments
@@ -84,7 +83,7 @@ if __name__ == "__main__":
             help="num of gpu")
     args = parser.parse_args()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
 
     # set the necessary list
     train_list = pd.read_csv(args.train_list,header=None)
