@@ -40,7 +40,7 @@ if __name__ == "__main__":
             type=int,
             help="batch size")
     parser.add_argument("--n_epochs",
-            default=30,
+            default=10,
             type=int,
             help="number of epoch")
     parser.add_argument("--epoch_steps",
@@ -48,7 +48,7 @@ if __name__ == "__main__":
             type=int,
             help="number of epoch step")
     parser.add_argument("--val_steps",
-            default=500,
+            default=1000,
             type=int,
             help="number of valdation step")
     parser.add_argument("--n_labels",
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             type=str,
             help="oprimizer")
     parser.add_argument("--gpu_num",
-            default="0",
+            default="1",
             type=str,
             help="num of gpu")
     args = parser.parse_args()
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 
         # set callbacks
         fpath = './pretrained/LIP_SegUNet{epoch:02d}.hdf5'
-        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=5)
-        es_cb = EarlyStopping(monitor='val_loss', patience=3, verbose=1, mode='auto')
+        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=2)
+        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
         tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
 
         # set generater
