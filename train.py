@@ -77,6 +77,9 @@ if __name__ == "__main__":
             default="adadelta",
             type=str,
             help="oprimizer")
+    parser.add_argument("--class_weights",
+            default=True,
+            help="dataset class weights")
     parser.add_argument("--gpu_num",
             default="1",
             type=str,
@@ -105,11 +108,18 @@ if __name__ == "__main__":
         KTF.set_session(session)
         KTF.set_learning_phase(1)
 
+        # class weights
+        classes = ['background', 'hat', 'hair', 'glove', 'sunglasses', 'upperclothes',
+                'dress', 'coat', 'socks', 'pants', 'jumpsuits', 'scarf', 'skirt',
+                'face', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'leftShoe','rightShoe']
+        if args.class_weights:
+            class_weights = [1, 40, 1, 114, 151, 3, 53, 7, 165, 7, 106, 249, 150, 1, 1, 1, 1, 1, 114, 118]
+
         # set callbacks
-        fpath = './pretrained/LIP_SegUNet{epoch:02d}.hdf5'
+        fpath = './pretrained_class_weights/LIP_SegUNet_class_weights{epoch:02d}.hdf5'
         cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=2)
         es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="./pretrained", write_images=True)
+        tb_cb = TensorBoard(log_dir="./pretrained_class_weights", write_images=True)
 
         # set generater
         train_gen = data_gen_small(trainimg_dir,
@@ -140,6 +150,7 @@ if __name__ == "__main__":
                 epochs=args.n_epochs,
                 validation_data=val_gen,
                 validation_steps=args.val_steps,
+                class_weight=class_weights,
                 callbacks=[cp_cb, es_cb, tb_cb])
 
     # save model
