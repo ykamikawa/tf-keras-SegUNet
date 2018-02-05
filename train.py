@@ -14,6 +14,76 @@ import pandas as pd
 from SegUNet import CreateSegUNet
 
 
+def main(args):
+    # set the necessary list
+    train_list = pd.read_csv(args.train_list,header=None)
+    val_list = pd.read_csv(args.val_list,header=None)
+
+    # set the necessary directories
+    trainimg_dir = args.trainimg_dir
+    trainmsk_dir = args.trainmsk_dir
+    valimg_dir = args.valimg_dir
+    valmsk_dir = args.valmsk_dir
+
+    # get old session
+    old_session = KTF.get_session()
+
+    with tf.Graph().as_default():
+        session = tf.Session('')
+        KTF.set_session(session)
+        KTF.set_learning_phase(1)
+
+        # class weights
+        classes = ['background', 'hat', 'hair', 'glove', 'sunglasses', 'upperclothes',
+                'dress', 'coat', 'socks', 'pants', 'jumpsuits', 'scarf', 'skirt',
+                'face', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'leftShoe','rightShoe']
+        if args.class_weights:
+            class_weights = [1, 40, 1, 114, 151, 3, 53, 7, 165, 7, 106, 249, 150, 1, 1, 1, 1, 1, 114, 118]
+
+        # set callbacks
+        fpath = './pretrained_class_weights/LIP_SegUNet_class_weights{epoch:02d}.hdf5'
+        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=2)
+        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
+        tb_cb = TensorBoard(log_dir="./pretrained_class_weights", write_images=True)
+
+        # set generater
+        train_gen = data_gen_small(trainimg_dir,
+                trainmsk_dir,
+                train_list,
+                args.batch_size,
+                [args.input_shape[0], args.input_shape[1]],
+                args.n_labels)
+        val_gen = data_gen_small(valimg_dir,
+                valmsk_dir,
+                val_list,
+                args.batch_size,
+                [args.input_shape[0], args.input_shape[1]],
+                args.n_labels)
+
+        # set model
+        segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
+        print(segunet.summary())
+
+        # compile model
+        segunet.compile(loss=args.loss,
+                optimizer=args.optimizer,
+                metrics=["accuracy"])
+
+        # fit with genarater
+        segunet.fit_generator(generator=train_gen,
+                steps_per_epoch=args.epoch_steps,
+                epochs=args.n_epochs,
+                validation_data=val_gen,
+                validation_steps=args.val_steps,
+                class_weight=class_weights,
+                callbacks=[cp_cb, es_cb, tb_cb])
+
+    # save model
+    with open("./pretrained/LIP_SegUNet.json", "w") as json_file:
+        json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
+    print("save json model done...")
+
+
 if __name__ == "__main__":
     # command line argments
     parser = argparse.ArgumentParser(description="SegUNet LIP dataset")
@@ -90,70 +160,4 @@ if __name__ == "__main__":
     if args.gpu_num:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_num
 
-    # set the necessary list
-    train_list = pd.read_csv(args.train_list,header=None)
-    val_list = pd.read_csv(args.val_list,header=None)
-
-    # set the necessary directories
-    trainimg_dir = args.trainimg_dir
-    trainmsk_dir = args.trainmsk_dir
-    valimg_dir = args.valimg_dir
-    valmsk_dir = args.valmsk_dir
-
-    # get old session
-    old_session = KTF.get_session()
-
-    with tf.Graph().as_default():
-        session = tf.Session('')
-        KTF.set_session(session)
-        KTF.set_learning_phase(1)
-
-        # class weights
-        classes = ['background', 'hat', 'hair', 'glove', 'sunglasses', 'upperclothes',
-                'dress', 'coat', 'socks', 'pants', 'jumpsuits', 'scarf', 'skirt',
-                'face', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg', 'leftShoe','rightShoe']
-        if args.class_weights:
-            class_weights = [1, 40, 1, 114, 151, 3, 53, 7, 165, 7, 106, 249, 150, 1, 1, 1, 1, 1, 114, 118]
-
-        # set callbacks
-        fpath = './pretrained_class_weights/LIP_SegUNet_class_weights{epoch:02d}.hdf5'
-        cp_cb = ModelCheckpoint(filepath = fpath, monitor='val_loss', verbose=1, save_best_only=True, mode='auto', period=2)
-        es_cb = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
-        tb_cb = TensorBoard(log_dir="./pretrained_class_weights", write_images=True)
-
-        # set generater
-        train_gen = data_gen_small(trainimg_dir,
-                trainmsk_dir,
-                train_list,
-                args.batch_size,
-                [args.input_shape[0], args.input_shape[1]],
-                args.n_labels)
-        val_gen = data_gen_small(valimg_dir,
-                valmsk_dir,
-                val_list,
-                args.batch_size,
-                [args.input_shape[0], args.input_shape[1]],
-                args.n_labels)
-
-        # set model
-        segunet = CreateSegUNet(args.input_shape, args.n_labels, args.kernel, args.pool_size, args.output_mode)
-        print(segunet.summary())
-
-        # compile model
-        segunet.compile(loss=args.loss,
-                optimizer=args.optimizer,
-                metrics=["accuracy"])
-
-        # fit with genarater
-        segunet.fit_generator(generator=train_gen,
-                steps_per_epoch=args.epoch_steps,
-                epochs=args.n_epochs,
-                validation_data=val_gen,
-                validation_steps=args.val_steps,
-                class_weight=class_weights,
-                callbacks=[cp_cb, es_cb, tb_cb])
-
-    # save model
-    with open("./pretrained/LIP_SegUNet.json", "w") as json_file:
-        json_file.write(json.dumps(json.loads(segunet.to_json()), indent=2))
-    print("save json model done...")
+    main(args)

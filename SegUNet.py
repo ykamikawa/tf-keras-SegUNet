@@ -10,6 +10,7 @@ import tensorflow as tf
 
 from Mylayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 
+
 def CreateSegUNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softmax"):
     inputs = Input(shape=input_shape)
 
