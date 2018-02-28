@@ -1,4 +1,4 @@
-# SegUNet(UNet + SegNet)
+# Seg-UNet(SegNet + UNet)
 SegUNet is a model of semantic segmentation based on SegNet and UNet(these model are based on Fully Convolutional Network).
 Architecture dedicated to restoring pixel position information.
 This architecture is good at fine edge restoration etc.
