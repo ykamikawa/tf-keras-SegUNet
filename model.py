@@ -1,17 +1,20 @@
-# -*- coding: utf-8 -*-
 from keras.models import Model
 from keras.layers import Input
-from keras.layers.core import Dense, Dropout, Activation, Flatten, Reshape, Permute
-from keras.layers.convolutional import Convolution2D, MaxPooling2D, UpSampling2D, ZeroPadding2D
+from keras.layers.core import Activation, Reshape
+from keras.layers.convolutional import Convolution2D
 from keras.layers.normalization import BatchNormalization
-from keras.layers.merge import Multiply, Concatenate
-from keras.utils import np_utils
-import tensorflow as tf
+from keras.layers.merge import Concatenate
 
-from Mylayers import MaxPoolingWithArgmax2D, MaxUnpooling2D
+from layers import MaxPoolingWithArgmax2D, MaxUnpooling2D
 
 
-def CreateSegUNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode="softmax"):
+def segunet(
+        input_shape,
+        n_labels,
+        kernel=3,
+        pool_size=(2, 2),
+        output_mode="softmax"):
+
     inputs = Input(shape=input_shape)
 
     # encoder
@@ -140,7 +143,9 @@ def CreateSegUNet(input_shape, n_labels, kernel=3, pool_size=(2, 2), output_mode
 
     conv_29 = Convolution2D(n_labels, (1, 1), padding="valid")(conv_28)
     conv_29 = BatchNormalization()(conv_29)
-    conv_29 = Reshape((input_shape[0] * input_shape[1], n_labels), input_shape=(input_shape[0], input_shape[1], n_labels))(conv_29)
+    conv_29 = Reshape(
+            (input_shape[0] * input_shape[1], n_labels),
+            input_shape=(input_shape[0], input_shape[1], n_labels))(conv_29)
 
     outputs = Activation(output_mode)(conv_29)
     print("Build decoder done..")

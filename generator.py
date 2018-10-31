@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-import numpy as np
 import cv2
-from keras.preprocessing.image import array_to_img, img_to_array, load_img, ImageDataGenerator
-from scipy.misc import imresize
+import numpy as np
+
+from keras.preprocessing.image import img_to_array
 
 
 def catelab(labels, dims, n_labels):
     x = np.zeros([dims[0], dims[1], n_labels])
     for i in range(dims[0]):
         for j in range(dims[1]):
-            x[i, j, labels[i][j]]=1
+            x[i, j, labels[i][j]] = 1
     x = x.reshape(dims[0] * dims[1], n_labels)
     return x
 
