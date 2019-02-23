@@ -31,13 +31,3 @@ This architecture is encoder-decoder model(29 conv2D layers).
     - class weights
     - device num
 
-## DEMO
-- dataset
-
-  - LIP(Look into person)
-
-      ![demo1](https://user-images.githubusercontent.com/27678705/33703457-8a504fdc-db6b-11e7-8922-db3c61294b18.png)
-
-## Author
-
-**ykamikawa**
